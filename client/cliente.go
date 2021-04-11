@@ -23,7 +23,7 @@ func Opciones(resp Resp) {
 			fmt.Println("")
 			fmt.Println("Inicia sesión")
 			signin(client, "signin")
-		} else if resp.Msg == "Credenciales válidas" {
+		} else if resp.Msg == "Credenciales válidas" || resp.Msg == "Añadido a la base de datos" {
 			fmt.Println("---- MENÚ PRINCIPAL ----")
 			fmt.Println("1. Crear un tema")
 			fmt.Println("2. Ver los temas disponibles")
@@ -38,6 +38,7 @@ func Opciones(resp Resp) {
 				guardar_tema("crear_tema", resp)
 				return
 			case 2:
+				leer_temas(resp)
 				return
 			case 3:
 				return

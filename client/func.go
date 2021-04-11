@@ -107,7 +107,7 @@ type tema struct {
 	Descripcion string
 }
 
-var gTema map[string]tema
+var gTemas map[string]tema
 
 //Cliente global
 var tr = &http.Transport{

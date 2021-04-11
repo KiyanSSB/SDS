@@ -1,0 +1,30 @@
+{
+ "Titulo": "Programación 1",
+ "Descripcion": "La asignatura Programación 1 es el primer contacto del estudiante con la programación de ordenadores.",
+ "Creador": {
+  "Nombre": "Gema",
+  "Apellidos": "Lozano Jimenez",
+  "Email": "glj4@alu.ua.es",
+  "Password": "12345"
+ },
+ "Comentarios": [
+  {
+   "Usuario": {
+    "Nombre": "Gema",
+    "Apellidos": "Lozano Jimenez",
+    "Email": "glj4@alu.ua.es",
+    "Password": "12345"
+   },
+   "Comentario": "Mu weno"
+  },
+  {
+   "Usuario": {
+    "Nombre": "Antero",
+    "Apellidos": "Guarinos Caballero",
+    "Email": "agc8@alu.ua.es",
+    "Password": "12345"
+   },
+   "Comentario": "Spesial"
+  }
+ ]
+}
