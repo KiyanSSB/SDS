@@ -34,15 +34,13 @@ type user struct {
 }
 
 type comentario struct {
-	Usuario    user
 	Comentario string
 }
 
 type tema struct {
 	Titulo      string
 	Descripcion string
-	//Creador     user
-	//Comentarios []comentario
+	Comentarios []comentario
 }
 
 // respuesta del servidor

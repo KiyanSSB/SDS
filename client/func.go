@@ -102,12 +102,26 @@ type Respfix struct {
 	Msg  string // mensaje adicional
 }
 
+type Comentario struct {
+	Usuario    string
+	Comentario string
+}
+
+var gComentarios map[string]Comentario
+
 type tema struct {
 	Titulo      string
 	Descripcion string
+	Comentarios map[string]Comentario
 }
 
 var gTemas map[string]tema
+
+type data struct {
+	Tema map[string]tema
+}
+
+var gData map[string]data
 
 //Cliente global
 var tr = &http.Transport{

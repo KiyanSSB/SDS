@@ -26,7 +26,7 @@ func Opciones(resp Resp) {
 		} else if resp.Msg == "Credenciales válidas" || resp.Msg == "Añadido a la base de datos" {
 			fmt.Println("---- MENÚ PRINCIPAL ----")
 			fmt.Println("1. Crear un tema")
-			fmt.Println("2. Ver los temas disponibles")
+			fmt.Println("2. Ver todos temas")
 			fmt.Println("3. Añadir un comentario")
 			fmt.Println("4. Cerrar el programa")
 			fmt.Println("------------------------")
@@ -41,6 +41,7 @@ func Opciones(resp Resp) {
 				leer_temas(resp)
 				return
 			case 3:
+				comentario("comentario", resp)
 				return
 			case 4:
 				return
