@@ -102,9 +102,17 @@ type Respfix struct {
 	Msg  string // mensaje adicional
 }
 
+type comentario struct {
+	NombreUsuario string
+	Comentario    string
+}
+
+var gComentarios map[string]comentario
+
 type tema struct {
 	Titulo      string
 	Descripcion string
+	Comentarios []comentario
 }
 
 var gTemas map[string]tema
