@@ -12,7 +12,7 @@ import (
 ***					En este fichero se encuentra todo lo relacionado con el registro en el apartado del servidor			***
 *******************************************************************************************************************************/
 
-func register(w http.ResponseWriter, req *http.Request) {
+func signup(w http.ResponseWriter, req *http.Request) {
 	u := user{}
 	u.Name = req.Form.Get("user")              // nombre
 	u.Salt = make([]byte, 16)                  // sal (16 bytes == 128 bits)
@@ -29,7 +29,7 @@ func register(w http.ResponseWriter, req *http.Request) {
 	} else {
 		gUsers[u.Name] = u
 		almacenarArchivo()
-		fmt.Println("almacenado")
+		fmt.Println("Almacenado")
 		response(w, true, "Usuario registrado")
 	}
 }

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"compress/zlib"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -13,6 +15,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 /**************************************************************************************************************************
@@ -30,10 +33,28 @@ type user struct {
 	Data map[string]string // datos adicionales del usuario
 }
 
+type comentario struct {
+	Usuario    user
+	Comentario string
+}
+
+type tema struct {
+	Titulo      string
+	Descripcion string
+	//Creador     user
+	//Comentarios []comentario
+}
+
 // respuesta del servidor
 type resp struct {
 	Ok  bool   // true -> correcto, false -> error
 	Msg string // mensaje adicional
+}
+
+type respf struct {
+	Ok   bool // true -> correcto, false -> error
+	File string
+	Msg  string // mensaje adicional
 }
 
 type registry struct {
@@ -41,7 +62,13 @@ type registry struct {
 	Users map[string]user
 }
 
+type registryTema struct {
+	Key   []byte
+	Temas map[string]tema
+}
+
 var gUsers map[string]user
+var gTemas map[string]tema
 var codee []byte
 
 /******************************************
@@ -53,6 +80,13 @@ func chk(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func leerTerminal() string {
+	text := bufio.NewReader(os.Stdin)
+	read, _ := text.ReadString('\n')
+	tipo := strings.TrimRight(read, "\r\n")
+	return tipo
 }
 
 // función para cifrar (con AES en este caso), adjunta el IV al principio
@@ -117,17 +151,57 @@ func response(w io.Writer, ok bool, msg string) {
 	w.Write(rJSON)                 // escribimos el JSON resultante
 }
 
+func responsefix(w io.Writer, file string, ok bool, msg string) {
+	r := respf{Ok: ok, File: file, Msg: msg}
+	rJSON, err := json.Marshal(&r)
+	chk(err)
+	w.Write(rJSON)
+}
+
 //Función que maneja las diferentes opciones del servidor
 func handler(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()                              //Es necesario parsear el usuario
 	w.Header().Set("Content-Type", "text/plain") //Cabecera estandar
 
 	switch req.Form.Get("cmd") { //Comprobamos el comando desde el cliente
-	case "register":
+	case "signup":
 		fmt.Println("El cliente ha seleccionado REGISTRO")
-		register(w, req)
+		signup(w, req)
+	case "signin":
+		fmt.Println("El cliente ha seleccionado LOGIN")
+		signin(w, req)
+	case "crear_tema":
+		fmt.Println("Enviar datos")
+		crear_tema(w, req)
 	default:
 		response(w, false, "Comando inválido")
+	}
+}
+
+func abrirArchivo() {
+	file, err := os.Open("registro.json") // abrimos el primer fichero (entrada)
+	gUsers = make(map[string]user)
+
+	if err != nil {
+		file, err = os.Create("registro.json") // abrimos el segundo fichero (salida)
+		// inicializamos mapa de usuarios
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		defer file.Close()
+		byteValue, _ := ioutil.ReadAll(file)
+		var code []byte = nil
+		Regi := registry{Key: code, Users: gUsers}
+		json.Unmarshal(decrypt(byteValue, codee), &Regi)
+		verdad := bytes.Equal(Regi.Key, codee)
+		if verdad == false {
+			fmt.Println("La contraseña no es la correcta")
+			panic(err)
+		} else {
+			Regi.Key = codee
+			fmt.Println("La contraseña es correcta, puedes continuar")
+		}
 	}
 }
 
@@ -145,6 +219,20 @@ func almacenarArchivo() {
 	chk(err)
 }
 
+func almacenarTema() {
+	var code []byte = nil
+	Tem := registryTema{Key: code, Temas: gTemas}
+	Tem.Key = codee
+	Tem.Temas = gTemas
+	os.Remove("temas.json")
+	_, err := os.Create("temas.json")
+	chk(err)
+	jsonF, err := json.Marshal(&Tem)
+	jsonFD := encrypt(jsonF, codee)
+	err = ioutil.WriteFile("temas.json", jsonFD, 0644)
+	chk(err)
+}
+
 /**********************************
 ***		MAIN DEL PROGRAMA		***
 ***********************************/
@@ -152,7 +240,12 @@ func almacenarArchivo() {
 func main() {
 	fmt.Println("Bienvenido al sistema de foros de SDS 20/21")
 	fmt.Println("Te encuentras ejecutando el SERVIDOR")
-
+	fmt.Println("------------------------------------")
+	fmt.Print("Dime la contraseña del servidor: ")
+	key := leerTerminal()
+	data := sha512.Sum512([]byte(key))
+	codee = data[:32]
+	abrirArchivo()
 	http.HandleFunc("/", handler)
 	chk(http.ListenAndServeTLS(":10443", "cert.pem", "key.pem", nil))
 }
