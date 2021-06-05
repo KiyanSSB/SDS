@@ -113,6 +113,9 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	case "crear_tema":
 		fmt.Println("Enviar datos")
 		crear_tema(w, req)
+	case "publicos":
+		fmt.Println("El cliente ha seleccionado ver los temas PUBLICOS")
+		enviar_temas_publicos(w, req)
 	default:
 		response(w, false, "Comando inválido")
 	}

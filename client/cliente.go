@@ -26,9 +26,10 @@ func Opciones(resp Resp) {
 		} else if resp.Msg == "Credenciales válidas" || resp.Msg == "Añadido a la base de datos" {
 			fmt.Println("---- MENÚ PRINCIPAL ----")
 			fmt.Println("1. Crear un tema")
-			fmt.Println("2. Ver todos temas")
-			fmt.Println("3. Añadir un comentario")
-			fmt.Println("4. Cerrar el programa")
+			fmt.Println("2. Ver todos los temas PUBLICOS")
+			fmt.Println("3. Ver todos los temas PRIVADOS")
+			fmt.Println("4. Añadir un comentario")
+			fmt.Println("5. Cerrar el programa")
 			fmt.Println("------------------------")
 			fmt.Print("¿Qué opción quieres realizar? ")
 			number := StringAInt(leerTerminal())
@@ -38,12 +39,14 @@ func Opciones(resp Resp) {
 				guardar_tema("crear_tema", resp)
 				return
 			case 2:
-				leer_temas(resp)
+				leer_temas_publicos(resp)
 				return
 			case 3:
+				leer_temas_privados(resp)
+			case 4:
 				comentario("comentario", resp)
 				return
-			case 4:
+			case 5:
 				return
 			default:
 				Opciones(resp)
