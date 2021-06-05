@@ -3,12 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"compress/zlib"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"crypto/sha512"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,14 +28,15 @@ type user struct {
 	Data map[string]string // datos adicionales del usuario
 }
 
-type comentario struct {
+type Comentario struct {
+	Usuario    string
 	Comentario string
 }
 
 type tema struct {
 	Titulo      string
 	Descripcion string
-	Comentarios []comentario
+	Comentarios map[string]Comentario
 }
 
 // respuesta del servidor
@@ -65,8 +61,8 @@ type registryTema struct {
 	Temas map[string]tema
 }
 
-var gUsers map[string]user
-var gTemas map[string]tema
+var gUsers map[string]user //Mapa que contiene un mapa donde un string coincide con un usuario
+var gTemas map[string]tema //Mapa que contiene un mapa donde un string coincide con un tema
 var codee []byte
 
 /******************************************
@@ -87,60 +83,6 @@ func leerTerminal() string {
 	return tipo
 }
 
-// función para cifrar (con AES en este caso), adjunta el IV al principio
-func encrypt(data, key []byte) (out []byte) {
-	out = make([]byte, len(data)+16)    // reservamos espacio para el IV al principio
-	rand.Read(out[:16])                 // generamos el IV
-	blk, err := aes.NewCipher(key)      // cifrador en bloque (AES), usa key
-	chk(err)                            // comprobamos el error
-	ctr := cipher.NewCTR(blk, out[:16]) // cifrador en flujo: modo CTR, usa IV
-	ctr.XORKeyStream(out[16:], data)    // ciframos los datos
-	return
-}
-
-// función para descifrar (con AES en este caso)
-func decrypt(data, key []byte) (out []byte) {
-	out = make([]byte, len(data)-16)     // la salida no va a tener el IV
-	blk, err := aes.NewCipher(key)       // cifrador en bloque (AES), usa key
-	chk(err)                             // comprobamos el error
-	ctr := cipher.NewCTR(blk, data[:16]) // cifrador en flujo: modo CTR, usa IV
-	ctr.XORKeyStream(out, data[16:])     // desciframos (doble cifrado) los datos
-	return
-}
-
-// función para comprimir
-func compress(data []byte) []byte {
-	var b bytes.Buffer      // b contendrá los datos comprimidos (tamaño variable)
-	w := zlib.NewWriter(&b) // escritor que comprime sobre b
-	w.Write(data)           // escribimos los datos
-	w.Close()               // cerramos el escritor (buffering)
-	return b.Bytes()        // devolvemos los datos comprimidos
-}
-
-// función para descomprimir
-func decompress(data []byte) []byte {
-	var b bytes.Buffer // b contendrá los datos descomprimidos
-
-	r, err := zlib.NewReader(bytes.NewReader(data)) // lector descomprime al leer
-
-	chk(err)         // comprobamos el error
-	io.Copy(&b, r)   // copiamos del descompresor (r) al buffer (b)
-	r.Close()        // cerramos el lector (buffering)
-	return b.Bytes() // devolvemos los datos descomprimidos
-}
-
-// función para codificar de []bytes a string (Base64)
-func encode64(data []byte) string {
-	return base64.StdEncoding.EncodeToString(data) // sólo utiliza caracteres "imprimibles"
-}
-
-// función para decodificar de string a []bytes (Base64)
-func decode64(s string) []byte {
-	b, err := base64.StdEncoding.DecodeString(s) // recupera el formato original
-	chk(err)                                     // comprobamos el error
-	return b                                     // devolvemos los datos originales
-}
-
 // función para escribir una respuesta del servidor
 func response(w io.Writer, ok bool, msg string) {
 	r := resp{Ok: ok, Msg: msg}    // formateamos respuesta
@@ -156,7 +98,7 @@ func responsefix(w io.Writer, file string, ok bool, msg string) {
 	w.Write(rJSON)
 }
 
-//Función que maneja las diferentes opciones del servidor
+//Función que maneja las diferentes opciones del servidor cuando recibe una petición del cliente
 func handler(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()                              //Es necesario parsear el usuario
 	w.Header().Set("Content-Type", "text/plain") //Cabecera estandar
@@ -178,7 +120,8 @@ func handler(w http.ResponseWriter, req *http.Request) {
 
 func abrirArchivo() {
 	file, err := os.Open("registro.json") // abrimos el primer fichero (entrada)
-	gUsers = make(map[string]user)
+
+	gUsers = make(map[string]user) //Inicializamos el mapa de los usuarios
 
 	if err != nil {
 		file, err = os.Create("registro.json") // abrimos el segundo fichero (salida)
@@ -187,19 +130,46 @@ func abrirArchivo() {
 			panic(err)
 		}
 	} else {
-		defer file.Close()
-		byteValue, _ := ioutil.ReadAll(file)
-		var code []byte = nil
+		defer file.Close() //Por último cerramos el fichero
+
+		byteValue, _ := ioutil.ReadAll(file) //Guardamos el contenido del fichero entero en la variable
+		var code []byte = nil                //Creamos una variable de bytes
 		Regi := registry{Key: code, Users: gUsers}
+
+		/*Utilizamoe el contenido del fichero y lo desencriptamos con el valor codee, que es la primera parte de la contraseña del servidor
+		Luego, guardamos en la variable Regi el contenido del json que almacena el servidor*/
 		json.Unmarshal(decrypt(byteValue, codee), &Regi)
+		//fmt.Println(Regi)
+
+		/*Comprobamos si la contraseña introducida por la persona que inicializa el servidor es la correcta si coincide con la misma que se ha utilizado para
+		Codificar los datos del json, si coinciden el codee y la Key del registro, podemos continuar */
 		verdad := bytes.Equal(Regi.Key, codee)
 		if verdad == false {
 			fmt.Println("La contraseña no es la correcta")
 			panic(err)
 		} else {
-			Regi.Key = codee
+			fmt.Println("Esto es el valor del Regi.key: ", Regi.Key)
+			fmt.Println("Esto es el valor del codee:", codee)
 			fmt.Println("La contraseña es correcta, puedes continuar")
 		}
+	}
+
+	/* Cargamos el apartado de los temas del servidor */
+	fichero, error := os.Open("temas.json")
+	gTemas = make(map[string]tema)
+
+	if error != nil {
+		fichero, error = os.Create("temas.json")
+		if error != nil {
+			panic(error)
+		}
+	} else {
+		defer fichero.Close()
+		contenidoFichero, _ := ioutil.ReadAll(fichero)
+		var codigo []byte = []byte("1")
+		Regi2 := registryTema{Key: codigo, Temas: gTemas}
+		json.Unmarshal(decrypt(contenidoFichero, codee), &Regi2)
+		fmt.Println(Regi2)
 	}
 }
 
@@ -217,6 +187,7 @@ func almacenarArchivo() {
 	chk(err)
 }
 
+//Almacenamos los temas en un fichero
 func almacenarTema() {
 	var code []byte = nil
 	Tem := registryTema{Key: code, Temas: gTemas}
@@ -226,7 +197,11 @@ func almacenarTema() {
 	_, err := os.Create("temas.json")
 	chk(err)
 	jsonF, err := json.Marshal(&Tem)
-	jsonFD := encrypt(jsonF, codee)
+
+	//Encriptamos el json de los temas con el codigo de la contraseña del server
+	//jsonFD := encrypt(jsonF, codee)
+	var jsonFD = jsonF
+
 	err = ioutil.WriteFile("temas.json", jsonFD, 0644)
 	chk(err)
 }
@@ -242,7 +217,8 @@ func main() {
 	fmt.Print("Dime la contraseña del servidor: ")
 	key := leerTerminal()
 	data := sha512.Sum512([]byte(key))
-	codee = data[:32]
+	fmt.Println("El valor de data es el siguiente: ", data)
+	codee = data[:32] //El codigo es los primeros 32
 	abrirArchivo()
 	http.HandleFunc("/", handler)
 	chk(http.ListenAndServeTLS(":10443", "cert.pem", "key.pem", nil))

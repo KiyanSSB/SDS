@@ -4,6 +4,9 @@
 /////                                                             //////
 ////////////////////////////////////////////////////////////////////////
 
+
+La contraseña actual es SDS para el Servidor
+
 --- Servidor
 
 Si da error con la contraseña hacer lo siguiente :

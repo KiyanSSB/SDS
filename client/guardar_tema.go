@@ -28,6 +28,7 @@ func guardar_tema(cmd string, resp Resp) {
 		gTemas[t.Titulo] = t
 	}
 
+	//Está guardando los temas, si posteas dos veces seguidas envia dos temas
 	jsonData, err := json.Marshal(&gTemas)
 	chk(err)
 	fmt.Println(gTemas)
@@ -43,5 +44,6 @@ func guardar_tema(cmd string, resp Resp) {
 	resp2 := Resp{}
 	byteValue, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal([]byte(byteValue), &resp2)
+	gTemas = make(map[string]tema) //Soluciona crear dos temas seguidos y envio de temas mal enviados
 	Opciones(resp2)
 }
