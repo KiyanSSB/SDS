@@ -29,7 +29,7 @@ func guardar_tema(cmd string, resp Resp) {
 	}
 
 	//Está guardando los temas, si posteas dos veces seguidas envia dos temas
-	jsonData, err := json.Marshal(&gTemas)
+	jsonData, err := json.Marshal(&t)
 	chk(err)
 	fmt.Println(gTemas)
 	jsonData = []byte(encode64(encrypt(jsonData, u.KeyData)))
@@ -41,6 +41,7 @@ func guardar_tema(cmd string, resp Resp) {
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
 
+	//Respuesta del usuario
 	resp2 := Resp{}
 	byteValue, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal([]byte(byteValue), &resp2)

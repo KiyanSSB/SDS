@@ -5,7 +5,6 @@ import (
 )
 
 func enviar_temas(w http.ResponseWriter, req *http.Request) {
-
 	//Abrir el fichero y desencriptar los temas
 
 	/*

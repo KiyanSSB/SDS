@@ -187,7 +187,7 @@ func almacenarArchivo() {
 	chk(err)
 }
 
-//Almacenamos los temas en un fichero
+//Almacenamos los temas en un fichero borrando el archivo anterior y actualizandolo
 func almacenarTema() {
 	var code []byte = nil
 	Tem := registryTema{Key: code, Temas: gTemas}

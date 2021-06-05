@@ -19,20 +19,19 @@ func crear_tema(w http.ResponseWriter, req *http.Request) {
 		desencript := decode64(req.Form.Get("json"))
 		patata := decrypt([]byte(desencript), []byte(req.Form.Get("name")))
 
-		fmt.Println(string(patata)) /***PARA VER EL JSON RECIBIDO***/
-
-		jsonString := (string(patata))
-
+		jsonString := (string(patata)) //Convertimos el valor a string porque está en los valores raros
 		fmt.Println(jsonString)
-		////////////////////////////////////////////////
 
-		t := make(map[string]tema)
+		//Guardamos en un tema T
+		var t tema
 		if err := json.Unmarshal([]byte(jsonString), &t); err != nil {
 			panic(err)
 		}
-		println(t[req.Form.Get("name")].Titulo)
 
-		gTemas[req.Form.Get("name")] = t[req.Form.Get("name")]
+		fmt.Println("Este es el tema", t.Titulo)
+		fmt.Println("Esta es la descripción: ", t.Descripcion)
+
+		gTemas[t.Titulo] = t
 
 		/*var jsonchulo gTemas[]
 
@@ -45,6 +44,8 @@ func crear_tema(w http.ResponseWriter, req *http.Request) {
 		//des64 := (decode64((string(desencript))))
 
 		//fmt.Println([]byte(des64))
+
+		//temilla := tema{}
 
 		almacenarTema()
 		response(w, true, "Añadido a la base de datos")
