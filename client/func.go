@@ -39,6 +39,11 @@ type Comentario struct {
 	Comentario string
 }
 
+type registryTema struct {
+	Key   []byte
+	Temas map[string]tema
+}
+
 var gComentarios map[string]Comentario
 
 type tema struct {
