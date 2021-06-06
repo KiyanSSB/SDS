@@ -19,6 +19,8 @@ func signup(w http.ResponseWriter, req *http.Request) {
 	rand.Read(u.Salt)                          // la sal es aleatoria
 	u.Data = make(map[string]string)           // reservamos mapa de datos de usuario
 	password := decode64(req.Form.Get("pass")) // contraseña (keyLogin)
+	u.Data["pubkey"] = req.Form.Get("pubkey")
+	u.Data["prikey"] = req.Form.Get("prikey")
 
 	// "hasheamos" la contraseña con scrypt
 	u.Hash, _ = scrypt.Key(password, u.Salt, 16384, 8, 1, 32)

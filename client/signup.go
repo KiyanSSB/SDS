@@ -5,6 +5,8 @@ package main
  ***********************************************************************************************************************/
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha512"
 	"encoding/json"
 	"fmt"
@@ -48,11 +50,30 @@ func signup(client *http.Client, cmd string) {
 
 	keyClient := sha512.Sum512([]byte(pass))
 	keyLogin := keyClient[:32]
+	keyData := keyClient[32:64] //La otra para los datos
+
+	//Generamos un par de claves (privada, pública) para el servidor
+	pkClient, err := rsa.GenerateKey(rand.Reader, 1024)
+	chk(err)
+	pkClient.Precompute()
+
+	pkJSON, err := json.Marshal(&pkClient)
+	chk(err)
+
+	keyPub := pkClient.Public()
+	pubJSON, err := json.Marshal(&keyPub)
+	chk(err)
 
 	data := url.Values{}
 	data.Set("cmd", cmd)
 	data.Set("user", user)
 	data.Set("pass", encode64(keyLogin))
+
+	//Comprimimos y codificamos la clave pública
+	data.Set("pubkey", encode64(compress(pubJSON)))
+
+	//Comprimimos ciframos y codificamos la clave privada
+	data.Set("prikey", encode64(encrypt(compress(pkJSON), keyData)))
 
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)

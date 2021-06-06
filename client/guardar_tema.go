@@ -45,6 +45,6 @@ func guardar_tema(cmd string, resp Resp) {
 	resp2 := Resp{}
 	byteValue, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal([]byte(byteValue), &resp2)
-	gTemas = make(map[string]tema) //Soluciona crear dos temas seguidos y envio de temas mal enviados
+	gTemas = make(map[string]tema) //Soluciona crear dos temas seguidos y envio de temas mal enviados, pero hace falta recargar de nuevo todos los temas
 	Opciones(resp2)
 }

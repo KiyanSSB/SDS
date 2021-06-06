@@ -187,8 +187,8 @@ func almacenarArchivo() {
 	os.Remove("registro.json")
 	_, err := os.Create("registro.json")
 	chk(err)
-	jsonF, err := json.Marshal(&Regi)
-	jsonFD := encrypt(jsonF, codee)
+	jsonFD, err := json.Marshal(&Regi) //Recordar cambiar los nombres
+	//jsonFD := encrypt(jsonF, codee)
 	err = ioutil.WriteFile("registro.json", jsonFD, 0644)
 	chk(err)
 }
