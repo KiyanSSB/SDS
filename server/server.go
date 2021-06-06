@@ -119,6 +119,12 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	case "comentario":
 		fmt.Println("El cliente ha seleccionado AÑADIR UN COMENTARIO")
 		crear_comentario(w, req)
+	case "damepubkey":
+		fmt.Println("El cliente ha seleccionado DAME LA PUBKEY")
+		obtener_pubkey(w, req)
+	case "guardarKey":
+		fmt.Println("El cliente ha seleccionado GUARDAR LA CLAVE DE UN USUARIO DE UN TEMA PRIVADO")
+		crear_vinculo_privado(w, req)
 	default:
 		response(w, false, "Comando inválido")
 	}
@@ -144,7 +150,14 @@ func abrirArchivo() {
 
 		/*Utilizamoe el contenido del fichero y lo desencriptamos con el valor codee, que es la primera parte de la contraseña del servidor
 		Luego, guardamos en la variable Regi el contenido del json que almacena el servidor*/
-		json.Unmarshal(decrypt(byteValue, codee), &Regi)
+
+		//
+		//			IMPORTANTE DE CARA A LOS FICHEROS DE LAS NARICES
+		//
+
+		//json.Unmarshal(decrypt(byteValue, codee), &Regi) //Utilizar esta cuando esté encriptado el fichero
+
+		json.Unmarshal(byteValue, &Regi) //Utilizar esta cuando no esté encriptado el fichero
 		//fmt.Println(Regi)
 
 		/*Comprobamos si la contraseña introducida por la persona que inicializa el servidor es la correcta si coincide con la misma que se ha utilizado para
@@ -156,6 +169,7 @@ func abrirArchivo() {
 		} else {
 			fmt.Println("Esto es el valor del Regi.key: ", Regi.Key)
 			fmt.Println("Esto es el valor del codee:", codee)
+
 			fmt.Println("La contraseña es correcta, puedes continuar")
 		}
 	}
@@ -224,6 +238,7 @@ func main() {
 	key := leerTerminal()
 	data := sha512.Sum512([]byte(key))
 	fmt.Println("El valor de data es el siguiente: ", data)
+	fmt.Println()
 	codee = data[:32] //El codigo es los primeros 32
 	abrirArchivo()
 	http.HandleFunc("/", handler)
