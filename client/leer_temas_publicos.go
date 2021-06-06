@@ -30,7 +30,9 @@ func leer_temas_publicos(resp Resp) {
 	tem := registryTema{Key: nil, Temas: nil}
 	json.Unmarshal([]byte(respuestilla.Msg), &tem)
 
-	for k := range tem.Temas {
+	//Printea el contenido que tenemos en tem.Temas
+	/*for k := range tem.Temas {
+		fmt.Println(k)
 		fmt.Println("Titulo: " + tem.Temas[k].Titulo)
 		fmt.Println("Descripcion: " + tem.Temas[k].Descripcion)
 		fmt.Println("Comentarios: ")
@@ -38,5 +40,18 @@ func leer_temas_publicos(resp Resp) {
 			fmt.Println(tem.Temas[k].Comentarios[w].Comentario)
 		}
 		fmt.Println("")
+	}*/
+
+	gTemas = tem.Temas
+
+	for k := range gTemas {
+		fmt.Println("Titulo: " + gTemas[k].Titulo)
+		fmt.Println("Descripcion: " + gTemas[k].Descripcion)
+		fmt.Println("Comentarios: ")
+		for w := range gComentarios {
+			fmt.Println(gTemas[k].Comentarios[w].Comentario)
+		}
+		fmt.Println("")
 	}
+	Opciones(resp)
 }

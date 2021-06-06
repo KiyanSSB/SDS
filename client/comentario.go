@@ -14,6 +14,7 @@ func comentario(cmd string, resp Resp) {
 	vacio := false
 	t := tema{}
 	c := Comentario{}
+	c.Usuario = u.Name
 	for k := range gTemas {
 		if tituloTema == gTemas[k].Titulo {
 			vacio = true
@@ -40,7 +41,7 @@ func comentario(cmd string, resp Resp) {
 	jsonData = []byte(encode64(encrypt(jsonData, u.KeyData)))
 
 	data := url.Values{}
-	data.Set("cmd", "crear_tema")
+	data.Set("cmd", "comentario")
 	data.Set("json", string(jsonData))
 	data.Set("name", string(u.KeyData))
 	r, err := client.PostForm("https://localhost:10443", data)

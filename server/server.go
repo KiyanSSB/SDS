@@ -116,6 +116,9 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	case "publicos":
 		fmt.Println("El cliente ha seleccionado ver los temas PUBLICOS")
 		enviar_temas_publicos(w, req)
+	case "comentario":
+		fmt.Println("El cliente ha seleccionado AÑADIR UN COMENTARIO")
+		crear_comentario(w, req)
 	default:
 		response(w, false, "Comando inválido")
 	}
