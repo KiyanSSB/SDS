@@ -198,8 +198,7 @@ func almacenarArchivo() {
 	_, err := os.Create("registro.json")
 	chk(err)
 	jsonF, err := json.Marshal(&Regi)
-	jsonFD := encrypt(jsonF, codee)
-	err = ioutil.WriteFile("registro.json", jsonFD, 0644)
+	err = ioutil.WriteFile("registro.json", jsonF, 0644)
 	chk(err)
 }
 
