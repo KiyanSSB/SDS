@@ -31,7 +31,6 @@ func guardar_tema(cmd string, resp Resp) {
 	//Está guardando los temas, si posteas dos veces seguidas envia dos temas
 	jsonData, err := json.Marshal(&t)
 	chk(err)
-	fmt.Println(gTemas)
 	jsonData = []byte(encode64(encrypt(jsonData, u.KeyData)))
 
 	data := url.Values{}

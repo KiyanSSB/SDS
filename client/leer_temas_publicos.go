@@ -21,37 +21,28 @@ func leer_temas_publicos(resp Resp) {
 	r, err := client.PostForm("https://localhost:10443", data)
 	chk(err)
 
-	respuestilla := Resp{}
+	resp2 := Resp{}
 	byteValue, _ := ioutil.ReadAll(r.Body)
 
-	json.Unmarshal([]byte(byteValue), &respuestilla)
-	//fmt.Println(respuestilla.Msg)
+	json.Unmarshal([]byte(byteValue), &resp2)
 
 	tem := registryTema{Key: nil, Temas: nil}
-	json.Unmarshal([]byte(respuestilla.Msg), &tem)
-
-	//Printea el contenido que tenemos en tem.Temas
-	/*for k := range tem.Temas {
-		fmt.Println(k)
-		fmt.Println("Titulo: " + tem.Temas[k].Titulo)
-		fmt.Println("Descripcion: " + tem.Temas[k].Descripcion)
-		fmt.Println("Comentarios: ")
-		for w := range gComentarios {
-			fmt.Println(tem.Temas[k].Comentarios[w].Comentario)
-		}
-		fmt.Println("")
-	}*/
+	json.Unmarshal([]byte(resp2.Msg), &tem)
 
 	gTemas = tem.Temas
 
-	for k := range gTemas {
-		fmt.Println("Titulo: " + gTemas[k].Titulo)
-		fmt.Println("Descripcion: " + gTemas[k].Descripcion)
-		fmt.Println("Comentarios: ")
-		for w := range gComentarios {
-			fmt.Println(gTemas[k].Comentarios[w].Comentario)
+	if gTemas != nil {
+		for k := range gTemas {
+			fmt.Println("Titulo: " + gTemas[k].Titulo)
+			fmt.Println("Descripcion: " + gTemas[k].Descripcion)
+			fmt.Println("Comentarios: ")
+			for w := range gTemas[k].Comentarios {
+				fmt.Println(gTemas[k].Comentarios[w].Comentario)
+			}
 		}
-		fmt.Println("")
+	} else {
+		fmt.Println("No hay temas públicos disponibles")
 	}
+
 	Opciones(resp)
 }

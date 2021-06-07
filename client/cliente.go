@@ -12,9 +12,6 @@ import (
 ***************************************************************************************************************/
 
 func Opciones(resp Resp) {
-	fmt.Println("")
-	fmt.Println("-" + resp.Msg + "-")
-
 	if !resp.Ok {
 		fmt.Println("Salir")
 		return
@@ -24,6 +21,7 @@ func Opciones(resp Resp) {
 			fmt.Println("Inicia sesión")
 			signin(client, "signin")
 		} else if resp.Msg == "Credenciales válidas" || resp.Msg == "Añadido a la base de datos" {
+			fmt.Println("")
 			fmt.Println("---- MENÚ PRINCIPAL ----")
 			fmt.Println("1. Crear un tema PUBLICO")
 			fmt.Println("2. Crear un tema PRIVADO")
@@ -34,6 +32,7 @@ func Opciones(resp Resp) {
 			fmt.Println("------------------------")
 			fmt.Print("¿Qué opción quieres realizar? ")
 			number := StringAInt(leerTerminal())
+			fmt.Println("")
 
 			switch number {
 			case 1:

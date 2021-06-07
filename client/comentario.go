@@ -18,6 +18,7 @@ func comentario(cmd string, resp Resp) {
 	for k := range gTemas {
 		if tituloTema == gTemas[k].Titulo {
 			vacio = true
+			gComentarios = gTemas[k].Comentarios
 			if gComentarios == nil {
 				gComentarios = make(map[string]Comentario)
 			}
@@ -28,16 +29,17 @@ func comentario(cmd string, resp Resp) {
 			t.Descripcion = gTemas[k].Descripcion
 			t.Comentarios = gComentarios
 			gTemas[k] = t
+			fmt.Println("")
+			fmt.Println("- Comentario añadido correctamente -")
 		}
 	}
 
 	if !vacio {
-		fmt.Println("No existe el tema")
+		fmt.Println("- No existe el tema -")
 	}
 
 	jsonData, err := json.Marshal(&gTemas)
 	chk(err)
-	fmt.Println(gTemas)
 	jsonData = []byte(encode64(encrypt(jsonData, u.KeyData)))
 
 	data := url.Values{}
@@ -50,5 +52,6 @@ func comentario(cmd string, resp Resp) {
 	resp2 := Resp{}
 	byteValue, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal([]byte(byteValue), &resp2)
-	Opciones(resp2)
+
+	Opciones(resp)
 }

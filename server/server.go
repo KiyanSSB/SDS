@@ -111,7 +111,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		fmt.Println("El cliente ha seleccionado LOGIN")
 		signin(w, req)
 	case "crear_tema":
-		fmt.Println("Enviar datos")
+		fmt.Println("Creando tema")
 		crear_tema(w, req)
 	case "publicos":
 		fmt.Println("El cliente ha seleccionado ver los temas PUBLICOS")
@@ -215,7 +215,6 @@ func almacenarTema() {
 	jsonF, err := json.Marshal(&Tem)
 
 	//Encriptamos el json de los temas con el codigo de la contraseña del server
-	//jsonFD := encrypt(jsonF, codee)
 	var jsonFD = jsonF
 
 	err = ioutil.WriteFile("temas.json", jsonFD, 0644)
