@@ -5,6 +5,7 @@ package main
  ***********************************************************************************************************************/
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
@@ -13,8 +14,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
+
+var Claves map[string]crypto.PublicKey
 
 var caracteresInvalidos = map[int]string{0: "!", 1: "\"", 2: "#", 3: "$", 4: "%", 5: "&", 6: "(", 7: ")",
 	8: "*", 9: "+", 10: ",", 11: "-", 12: ".", 13: "/", 14: ":", 15: ";", 16: "<", 17: "=",
@@ -25,6 +29,7 @@ var caracteresInvalidos = map[int]string{0: "!", 1: "\"", 2: "#", 3: "$", 4: "%"
 	58: "'", 59: "^", 60: "¬", 61: "·"}
 
 func signup(client *http.Client, cmd string) {
+
 	fmt.Println("Registrar un usuario")
 	fmt.Println("--------------------")
 
@@ -63,6 +68,14 @@ func signup(client *http.Client, cmd string) {
 	keyPub := pkClient.Public()
 	pubJSON, err := json.Marshal(&keyPub)
 	chk(err)
+
+	println(keyPub)
+	println(pubJSON)
+	print(string(pubJSON))
+
+	//Guardamos en un fichero la clave publica
+	os.Create("cp.json")
+	err = ioutil.WriteFile("cp.json", pubJSON, 0644)
 
 	data := url.Values{}
 	data.Set("cmd", cmd)
