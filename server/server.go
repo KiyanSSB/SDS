@@ -167,9 +167,6 @@ func abrirArchivo() {
 			fmt.Println("La contraseña no es la correcta")
 			panic(err)
 		} else {
-			fmt.Println("Esto es el valor del Regi.key: ", Regi.Key)
-			fmt.Println("Esto es el valor del codee:", codee)
-
 			fmt.Println("La contraseña es correcta, puedes continuar")
 		}
 	}
@@ -189,7 +186,6 @@ func abrirArchivo() {
 		var codigo []byte = []byte("1")
 		Regi2 := registryTema{Key: codigo, Temas: gTemas}
 		json.Unmarshal(decrypt(contenidoFichero, codee), &Regi2)
-		fmt.Println(Regi2)
 	}
 }
 
@@ -201,8 +197,8 @@ func almacenarArchivo() {
 	os.Remove("registro.json")
 	_, err := os.Create("registro.json")
 	chk(err)
-	jsonFD, err := json.Marshal(&Regi) //Recordar cambiar los nombres
-	//jsonFD := encrypt(jsonF, codee)
+	jsonF, err := json.Marshal(&Regi)
+	jsonFD := encrypt(jsonF, codee)
 	err = ioutil.WriteFile("registro.json", jsonFD, 0644)
 	chk(err)
 }
@@ -237,8 +233,6 @@ func main() {
 	fmt.Print("Dime la contraseña del servidor: ")
 	key := leerTerminal()
 	data := sha512.Sum512([]byte(key))
-	fmt.Println("El valor de data es el siguiente: ", data)
-	fmt.Println()
 	codee = data[:32] //El codigo es los primeros 32
 	abrirArchivo()
 	http.HandleFunc("/", handler)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -13,7 +12,6 @@ func crear_comentario(w http.ResponseWriter, req *http.Request) {
 		patata := decrypt([]byte(desencript), []byte(req.Form.Get("name")))
 
 		jsonString := (string(patata)) //Convertimos el valor a string porque está en los valores raros
-		fmt.Println(jsonString)
 
 		if err := json.Unmarshal([]byte(jsonString), &gTemas); err != nil {
 			panic(err)
