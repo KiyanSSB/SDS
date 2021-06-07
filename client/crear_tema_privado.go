@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -34,6 +34,7 @@ func crear_tema_privado(resp Resp) {
 		gTemas[t.Titulo] = t
 	}
 
+	//Encodea el tema de alguna manera rara
 	reqBodyBytes := new(bytes.Buffer)
 	json.NewEncoder(reqBodyBytes).Encode(t)
 
@@ -61,7 +62,14 @@ func crear_tema_privado(resp Resp) {
 	json.Unmarshal([]byte(byteValue), &respuestatonta)
 	fmt.Println("Clave pública del usuario elegido: ", respuestatonta.Msg)
 	fmt.Println("Codificando contraseña aleatoria de tema con clave pública del usuario")
+
+	//Creamos la clave random del tema encriptada con la clave pública del usuario que lo quiere leer
+	var clavePubUnmarshal rsa.PublicKey
+	json.Unmarshal([]byte(respuestatonta.Msg), &clavePubUnmarshal)
+	encClave, err := rsa.EncryptPKCS1v15(rand.Reader, &clavePubUnmarshal, keyTema64)
+
 	//->>>
+
 	temaAenvia := encode64(encrypt(compress(reqBodyBytes.Bytes()), keyTema64))
 	println(temaAenvia)
 
@@ -74,8 +82,12 @@ func crear_tema_privado(resp Resp) {
 	data2.Set("cmd", "guardarKey")
 	data2.Set("user", nombreUsuario)
 	data2.Set("tema", t.Titulo)
-	data2.Set("encriptado", encode64(encrypt(compress([]byte(respuestatonta.Msg)), keyTema64)))
-	data2.Set("file", encode64(encrypt(compress([]byte(temaJSON)), keyTema64))) //Tema encoded
+	data2.Set("encriptado", string(encClave))                                   //Key random codificada con la clave publica del usuario
+	data2.Set("file", encode64(encrypt(compress([]byte(temaJSON)), keyTema64))) //Tema creado encodeado
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//Simulación de lectura
 
 	//Variable para chckear que funciona
 	ficheroRandom := encode64(encrypt(compress([]byte(temaJSON)), keyTema64))
@@ -85,30 +97,62 @@ func crear_tema_privado(resp Resp) {
 	r2, err := client.PostForm("https://localhost:10443", data2)
 	chk(err)
 
-	respuestaSiCreado := Resp{}
-	byteValue, _ = ioutil.ReadAll(r2.Body)
-	json.Unmarshal([]byte(byteValue), &respuestaSiCreado)
-	print("ESta es la clave privada del usuario : ", respuestaSiCreado.Msg)
+	//Recibir la clave privada del usuario
 
-	//Desencriptar la llave privada del usuario
-	privateKet := encode64(decrypt(decompress(decode64(respuestaSiCreado.Msg)), u.KeyData))
-	var pk rsa.PrivateKey
+	//Esto está bien
+	respuestaSiCreado := Resp{}                                                                //Recibimos la clave privada del usuario CODIFICADA			//
+	byteValue, _ = ioutil.ReadAll(r2.Body)                                                     //
+	json.Unmarshal([]byte(byteValue), &respuestaSiCreado)                                      //
+	println("Esta es la clave privada del usuario SIN DESENCRIPTAR : ", respuestaSiCreado.Msg) //
+	print("\n")
+
+	//1º Desencriptar la clave privada del usuario que recibimos del servidor
+	privateKet := decompress(decrypt(decode64(respuestaSiCreado.Msg), u.KeyData)) //Está en bytes
+
+	println(string(privateKet))
+
+	privateKetMarshall, err := json.Marshal(privateKet)
+
+	var clavePrivadaDesencriptada rsa.PrivateKey
+
+	json.Unmarshal(privateKetMarshall, clavePrivadaDesencriptada) //Guardamos en formato rsa.privateKey //Esto de aquí está mal
+
+	//2º Desencriptar la clave Random con la clave privada
+	claveRandomDesencriptada, err := rsa.DecryptPKCS1v15(rand.Reader, &clavePrivadaDesencriptada, encClave)
+
+	println(claveRandomDesencriptada)
+
+	//3º Desencriptar el tema encriptado con la clave random
+	temaDesencriptado := decompress(decrypt(decode64(ficheroRandom), claveRandomDesencriptada))
+
+	//4º Printear el tema
+	println(temaDesencriptado)
+
+	//////////////
+
+	var pk rsa.PrivateKey //Esto es una private KEY  pk = 0
+
+	println(string(privateKet))
+
+	//pk, err = x509.ParsePKCS1PrivateKey(privateKet)
+
+	//Pasar los bytes de privateKet a RSA Key
 
 	println("hola que tal ")
 
-	var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(&pk)
+	//var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(&pk) //Esto es la clave privada en bytes
 
-	json.Unmarshal(decode64(privateKet), &pk)
+	json.Unmarshal(privateKet, &pk)
 
 	_ = ioutil.WriteFile("datos_"+nombreUsuario+"_"+t.Titulo+".json.enc", decode64(ficheroRandom), 0644)
 
-	fichetiro, err := ioutil.ReadFile("datos_" + nombreUsuario + "_" + t.Titulo + ".json.enc")
+	//fichetiro, err := ioutil.ReadFile("datos_" + nombreUsuario + "_" + t.Titulo + ".json.enc")
 	chk(err)
-	ficheritoEnconded := encode64(fichetiro)
+	//ficheritoEnconded := encode64(fichetiro)
 
 	//Igual hace falta un unmarshal
 
-	temaDesencriptado := decrypt(decode64(ficheritoEnconded), privateKeyBytes)
+	//temaDesencriptado := decrypt(decode64(ficheritoEnconded), privateKet)
 
 	var temaFinal tema
 
